@@ -24,3 +24,4 @@ def define_symbols(n, name_scheme=('x', 'numbers')):
     else:
         raise ValueError(
                 "Dmath Library Error 01101: Function define_symbols failed because n was not int, or because name_scheme was invalid.")
+
