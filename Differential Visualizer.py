@@ -1,5 +1,15 @@
 from diff import *
 import matplotlib.pyplot as plt
+import Tkinter as tk
+
+
+class Application(tk.Tk):  # Defines the Application class for the entire program
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+        container = tk.Frame(self)  # Builds the frame for the program
+        # Configure TK container rows
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
 
 
 def define_symbols(n, name_scheme=('x', 'numbers')):
@@ -25,3 +35,6 @@ def define_symbols(n, name_scheme=('x', 'numbers')):
         raise ValueError(
                 "Dmath Library Error 01101: Function define_symbols failed because n was not int, or because name_scheme was invalid.")
 
+
+app = Application()
+app.mainloop()
