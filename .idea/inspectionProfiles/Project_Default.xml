@@ -6,6 +6,7 @@
         <list>
           <option value="diff.x2" />
           <option value="diff.x1" />
+          <option value="diff.x3" />
         </list>
       </option>
     </inspection_tool>

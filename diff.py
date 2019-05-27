@@ -1,6 +1,5 @@
 import sympy as s
 import numpy as np
-import matplotlib.pyplot as plt
 
 """
 
@@ -48,19 +47,18 @@ class Diff:
             """
             Main Looping
             """
-            for step in range(steps - 2):
-                error_step_track = step
-                for var_id in range(len(data) - 2):
-                    try:
-                        # Looping over both the steps and the variables within these steps
-                        data[-1 * (var_id + 2)].append(
-                                data[-1 * (var_id + 2)][-1] + (data[-1 * (var_id + 1)][-1] * dxf))
-                        data[0].append(data[0][0] + (step * dxf))
-                        data[-1].append(self.l(*[data[i][-1] for i in range(len(init))]))
-                    except ZeroDivisionError:  # Except the Zero Division Case
-                        print "Dmath Warning 10113: Division by 0 encountered at step %s." % (str(error_step_track + 1))
-                        data[-1].append(1000.0)
-            return data
+            try:
+                for step in range(1, steps + 1):  # Creates a mapping of values 1-steps in a list
+                    # Calculate the next final variable based on the current values in data.
+                    data[-1].append(self.l(
+                            *[i[-1] for i in data[:-1]]))  # Utilizes all but the last value to construct the next value
+                    data[0].append(data[0][-1] + dxf)  # Adds the next x value
+                    for variable in range(2, len(data)):
+                        # Loops through data excluding the x value and the functional value
+                        data[-1 * variable].append(data[-1 * variable][-1] + (data[(-1 * variable) + 1][-1] * dx))
+                return data
+            except ZeroDivisionError:
+                data[-1].append(1000.0)
         except ValueError:
             raise TypeError("Dmath Error 10111: Variable in Diff.Euler was not type int or float.")
         except TypeError:
@@ -208,41 +206,4 @@ class Diff:
         return [grid_x, grid_y, u1, v1]
 
 
-def define_symbols(n, name_scheme=('x', 'numbers')):
-    """
-    Returns globally defined symbols from sympy with these associated name.
-    :param n: Number of variables to define with the method
-    :param name_scheme: Way to name the symbols (starting letter, enumerated string type) (str,str)
-    :return: True of finished, raises error if failure
-    """
-    alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-                'v', 'w', 'x', 'y', 'z']
-    if n == 1:
-        globals()['%s' % name_scheme[0]] = s.Symbol(name_scheme[0])
-    elif type(n) == int and name_scheme[1] == 'numbers':
-        for j in range(n):
-            globals()['%s%s' % (name_scheme[0], str(j + 1))] = s.Symbol(name_scheme[0] + str(j + 1))
-        return True
-    elif type(n) == int and name_scheme[1] == 'letters':
-        for j in range(n):
-            globals()['%s%s' % (name_scheme[0], alphabet[j])] = s.Symbol(name_scheme[0] + alphabet[j])
-        return True
-    else:
-        raise ValueError(
-                "Dmath Library Error 01101: Function define_symbols failed because n was not int, or because name_scheme was invalid.")
 
-
-y = [1, 2, 3]
-define_symbols(3)
-g = Diff((2 * x2) / x1, 1, (x1, x2))
-plt.figure()
-x_dat = [i for i in range(-10, 10) if i != 0]
-y_dat = [j for j in range(-10, 10)]
-p = [[x_dat[i], y_dat[j]] for i in range(len(x_dat)) for j in range(len(y_dat))]
-c = g.get_solution_set(p)
-r = g.get_slope_field(axis=[-10.0, 10.0, -10.0, 10.0], resolution=20)
-plt.quiver(r[0], r[1], r[2], r[3], headlength=0, headwidth=1)
-for i in c:
-    plt.plot(i[0], i[1])
-plt.axis([-10, 10, -10, 10])
-plt.show()
