@@ -1,15 +1,33 @@
 from diff import *
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import Tkinter as tk
 
+class Application(tk.Frame):
+    def __init__(self):
+        tk.Frame.__init__(self)
+        self.pack()
+        self.create_widgets()
 
-class Application(tk.Tk):  # Defines the Application class for the entire program
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        container = tk.Frame(self)  # Builds the frame for the program
-        # Configure TK container rows
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+    def create_widgets(self):
+        """
+        Creates the Application wigets
+        :return: The wigets that need to be created
+        """
+        equation_entry = 'Enter Equation Here:'
+        diff_label = tk.Label(self,text='Differential Equation: ').grid(row=1,column=1)
+        diff_entry = tk.Entry(self,textvariable=equation_entry).grid(row=1,column=2)
+
+
+
+
+    def say_hi(self):
+        print("hi there, everyone!")
+
+app = Application()
+app.mainloop()
 
 
 def define_symbols(n, name_scheme=('x', 'numbers')):
@@ -35,6 +53,3 @@ def define_symbols(n, name_scheme=('x', 'numbers')):
         raise ValueError(
                 "Dmath Library Error 01101: Function define_symbols failed because n was not int, or because name_scheme was invalid.")
 
-
-app = Application()
-app.mainloop()
