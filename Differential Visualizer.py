@@ -4,6 +4,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import Tkinter as tk
+import ttk
 
 class Application(tk.Frame):
     def __init__(self):
@@ -32,10 +33,10 @@ class Application(tk.Frame):
         """
         Section 1
         """
-        self.diff_label = tk.Label(self, text='Differential Equation: ').grid(row=1, column=1,sticky='E')
-        self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=3,sticky='W',columnspan=2)
+        self.diff_label = tk.Label(self, text='Differential Equation: ').grid(row=1, column=1,sticky='W')
+        self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2,sticky='W')
         self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=2,columnspan=3)
-        self.option_label = tk.Label(self, text='Options').grid(row=3, column=2)
+        self.option_label = tk.Label(self, text='Options').grid(row=3, column=1,columnspan=2,sticky="NSWE")
         """
         Section 2
         """
@@ -45,7 +46,7 @@ class Application(tk.Frame):
         """
         Section 2 Label Objects
         """
-        self.initial_condition_label = tk.Label(self, text='Initial Conditions').grid(row=4, column=3)
+        self.initial_condition_label = tk.Label(self, text='Initial Conditions').grid(row=4, column=2)
         self.delta_x_label = tk.Label(self, text='Delta X: ').grid(row=5, column=1,sticky="W")
         self.num_step_label = tk.Label(self, text='# of Steps: ').grid(row=6, column=1,sticky="W")
         self.color_label = tk.Label(self, text='Color').grid(row=7, column=1,sticky="W")
