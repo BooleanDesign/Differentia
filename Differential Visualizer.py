@@ -9,23 +9,83 @@ class Application(tk.Frame):
     def __init__(self):
         tk.Frame.__init__(self)
         self.pack()
-        self.create_widgets()
+        self.create_init_widgets()
 
-    def create_widgets(self):
+    def create_init_widgets(self):
         """
         Creates the Application wigets
         :return: The wigets that need to be created
         """
-        equation_entry = 'Enter Equation Here:'
-        diff_label = tk.Label(self,text='Differential Equation: ').grid(row=1,column=1)
-        diff_entry = tk.Entry(self,textvariable=equation_entry).grid(row=1,column=2)
-
-
-
-
-    def say_hi(self):
-        print("hi there, everyone!")
-
+        """
+        Widget Variables
+        """
+        self.selected_estimation_type = tk.StringVar()
+        self.equation_entry = tk.StringVar()
+        self.del_x = tk.StringVar()
+        self.num_step = tk.StringVar()
+        self.color = tk.StringVar()
+        self.color.set("FFFFFF")
+        self.num_step.set("1000")
+        self.del_x.set("0.01")
+        self.equation_entry.set("Differential Equation")
+        self.selected_estimation_type.set("None")
+        """
+        Section 1
+        """
+        self.diff_label = tk.Label(self, text='Differential Equation: ').grid(row=1, column=1,sticky='E')
+        self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=3,sticky='W',columnspan=2)
+        self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=2,columnspan=3)
+        self.option_label = tk.Label(self, text='Options').grid(row=3, column=2)
+        """
+        Section 2
+        """
+        self.estimation_type = ttk.Combobox(self, textvariable=self.selected_estimation_type)
+        self.estimation_type['values'] = ("Euler's Method", "Heun's Method", "Runge Kutta Method")
+        self.estimation_type.grid(row=4, column=1)
+        """
+        Section 2 Label Objects
+        """
+        self.initial_condition_label = tk.Label(self, text='Initial Conditions').grid(row=4, column=3)
+        self.delta_x_label = tk.Label(self, text='Delta X: ').grid(row=5, column=1,sticky="W")
+        self.num_step_label = tk.Label(self, text='# of Steps: ').grid(row=6, column=1,sticky="W")
+        self.color_label = tk.Label(self, text='Color').grid(row=7, column=1,sticky="W")
+        """
+        Section 2 Entry Objects
+        """
+        self.delta_x_entry = tk.Entry(self, textvariable=self.del_x).grid(row=5, column=1,sticky='E')
+        self.num_step_entry = tk.Entry(self, textvariable=self.num_step).grid(row=6, column=1,sticky='E')
+        self.color_entry = tk.Entry(self, textvariable=self.color).grid(row=7, column=1,sticky='E')
+        """
+        Section 2 Misc
+        """
+        self.ini_conds_tree_cols = [("Var", 100), ("Value", 200)]
+        self.ini_conds = ttk.Treeview(self,
+                                      columns=[col for col, _ in self.ini_conds_tree_cols],
+                                      show='headings')
+        for col, colwidth in self.ini_conds_tree_cols:
+            self.ini_conds.heading(col, text=col.title())
+            self.ini_conds.column(col, width=colwidth)
+        self.ini_conds.insert('', 'end', text='equ')
+        """
+        Section 3 Labeling
+        """
+        self.diffeq_label = tk.Label(self, text='Differential Equations').grid(row=8, column=1,columnspan=2,sticky='NSEW')
+        """
+        Section 4 Treeview
+        """
+        self.equ_tracker_tree_cols = [("#", 60), ("Degree", 100), ("Equation", 200), ("Method", 100),
+                                      ("Initial Conditions", 100)]
+        self.equ_tracker_tree = ttk.Treeview(self,
+                                             columns=[col for col, _ in self.equ_tracker_tree_cols],
+                                             show='headings')
+        for col, colwidth in self.equ_tracker_tree_cols:
+            self.equ_tracker_tree.heading(col, text=col.title())
+            self.equ_tracker_tree.column(col, width=colwidth)
+        """
+        Final Gridding
+        """
+        self.equ_tracker_tree.grid(row=9, column=1,sticky='NSEW',columnspan=2)
+        self.ini_conds.grid(row=5, column=2,rowspan=3,sticky='NSEW')
 app = Application()
 app.mainloop()
 
