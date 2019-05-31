@@ -2,12 +2,21 @@ import Tkinter as tk
 import ttk
 
 import matplotlib
+import sympy.parsing.sympy_parser as prs
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from diff import *
 
 matplotlib.use("TkAgg")
+
+"""
+Error Guide:
+1st digit: Class number, 0 if not class
+2nd digit: Definition Number 0 if in main code
+3rd digit: number of error
+4th digit:#
+"""
 
 
 class Application(tk.Frame):
@@ -16,6 +25,7 @@ class Application(tk.Frame):
         self.pack()
         self.create_init_widgets()
         self.init_plots()
+        self.differentials = []
 
     def create_init_widgets(self):
         """
@@ -30,6 +40,7 @@ class Application(tk.Frame):
         self.del_x = tk.StringVar()
         self.num_step = tk.StringVar()
         self.color = tk.StringVar()
+        self.degree_entry = tk.StringVar()
         self.color.set("FFFFFF")
         self.num_step.set("1000")
         self.del_x.set("0.01")
@@ -38,8 +49,10 @@ class Application(tk.Frame):
         """
         Section 1
         """
-        self.diff_label = tk.Label(self, text='Differential Equation: ').grid(row=1, column=1, sticky='W')
-        self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2, sticky='W')
+        self.deg_label = tk.Label(self, text='Degree: ').grid(row=1, column=1, sticky='W')
+        self.deg_entry = tk.Entry(self, textvariable=self.degree_entry).grid(row=1, column=1, sticky='E')
+        self.exp_label = tk.Label(self, text='Expression: ').grid(row=1, column=2, sticky='W')
+        self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2)
         self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=1, columnspan=2)
         self.option_label = tk.Label(self, text='Options').grid(row=3, column=1, columnspan=2, sticky="NSWE")
         """
@@ -137,7 +150,6 @@ class Application(tk.Frame):
         self.ax2 = self.figure.add_subplot(111)
         self.ax1 = self.figure.add_subplot(111)
         self.ax1.plot([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100])
-        self.ax2.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [i ** 3 for i in range(1, 11)])
         self.graph_canvas = (FigureCanvasTkAgg(self.figure, self))
         self.graph_canvas.show()
         self.graph_canvas.get_tk_widget().grid(row=1, column=3, rowspan=9, sticky='NSEW')
@@ -162,6 +174,38 @@ class Application(tk.Frame):
 
     def client_exit(self):
         exit()
+
+    # def add_function(self):
+    #   try:
+    #      self.differentials.append(Diff(self.equation_entry.get(),))
+
+
+def parse_function(expr):
+    """
+    Parses through a (str) type object to form a functional lambda expression
+    :param expr: The expression to be parsed <str>
+    :return: Returns the lambda type function
+    """
+    """
+    Start by checking the variable forms of the equation. Should have x followed by y1,y2,y3, etc.
+    y1 = dy/dx, y2 = d2y/dx2, etc...
+    """
+    ex = prs.parse_expr(expr)
+    syms_in_exp = str(list(prs.parse_expr(expr).free_symbols))
+    # Checking the name of the various symbols
+    if False in [('y' in i or i == 'x') for i in syms_in_exp]:
+        " One of the variables is not correct"
+        raise ValueError("Differentia Error 0101: Symbol of input must be 'x' or 'yn', not %s" % str(
+            syms_in_exp[[('y' in i or i == 'x') for i in syms_in_exp].index(False)]))
+    else:
+        # Cleared the name check, now trying to lambdify
+        try:
+            # Must create a symbol for each of the symbols in the expression, as such,
+            define_symbols(1, ('x', 'numbers'))
+            define_symbols(len(syms_in_exp) - 1, ('y', 'numbers'))
+            return s.lambdify(prs.parse_expr(expr).free_symbols, expr)
+        except SyntaxError:
+            raise ValueError("Differentia Error 0102: Syntax of the expression was wrong.")
 
 
 def define_symbols(n, name_scheme=('x', 'numbers')):
