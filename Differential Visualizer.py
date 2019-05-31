@@ -1,10 +1,13 @@
-from diff import *
-import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 import Tkinter as tk
 import ttk
+
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
+from diff import *
+
+matplotlib.use("TkAgg")
 
 
 class Application(tk.Frame):
@@ -12,6 +15,7 @@ class Application(tk.Frame):
         tk.Frame.__init__(self)
         self.pack()
         self.create_init_widgets()
+        self.init_plots()
 
     def create_init_widgets(self):
         """
@@ -36,7 +40,7 @@ class Application(tk.Frame):
         """
         self.diff_label = tk.Label(self, text='Differential Equation: ').grid(row=1, column=1, sticky='W')
         self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2, sticky='W')
-        self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=2, columnspan=3)
+        self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=1, columnspan=2)
         self.option_label = tk.Label(self, text='Options').grid(row=3, column=1, columnspan=2, sticky="NSWE")
         """
         Section 2
@@ -123,6 +127,20 @@ class Application(tk.Frame):
         Creating the Settings Menu
         """
         self.filemenu.add_command(label='Change Settings', command=self.settings_frame)
+
+    def init_plots(self):
+        """
+        Initiates the plots
+        :return:
+        """
+        self.figure = Figure(figsize=(5, 5), dpi=100)
+        self.ax2 = self.figure.add_subplot(111)
+        self.ax1 = self.figure.add_subplot(111)
+        self.ax1.plot([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100])
+        self.ax2.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [i ** 3 for i in range(1, 11)])
+        self.graph_canvas = (FigureCanvasTkAgg(self.figure, self))
+        self.graph_canvas.show()
+        self.graph_canvas.get_tk_widget().grid(row=1, column=3, rowspan=9, sticky='NSEW')
 
     def settings_frame(self):
         return False
