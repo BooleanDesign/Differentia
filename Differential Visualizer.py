@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import Tkinter as tk
 import ttk
 
+
 class Application(tk.Frame):
     def __init__(self):
         tk.Frame.__init__(self)
@@ -33,10 +34,10 @@ class Application(tk.Frame):
         """
         Section 1
         """
-        self.diff_label = tk.Label(self, text='Differential Equation: ').grid(row=1, column=1,sticky='W')
-        self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2,sticky='W')
-        self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=2,columnspan=3)
-        self.option_label = tk.Label(self, text='Options').grid(row=3, column=1,columnspan=2,sticky="NSWE")
+        self.diff_label = tk.Label(self, text='Differential Equation: ').grid(row=1, column=1, sticky='W')
+        self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2, sticky='W')
+        self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=2, columnspan=3)
+        self.option_label = tk.Label(self, text='Options').grid(row=3, column=1, columnspan=2, sticky="NSWE")
         """
         Section 2
         """
@@ -47,15 +48,15 @@ class Application(tk.Frame):
         Section 2 Label Objects
         """
         self.initial_condition_label = tk.Label(self, text='Initial Conditions').grid(row=4, column=2)
-        self.delta_x_label = tk.Label(self, text='Delta X: ').grid(row=5, column=1,sticky="W")
-        self.num_step_label = tk.Label(self, text='# of Steps: ').grid(row=6, column=1,sticky="W")
-        self.color_label = tk.Label(self, text='Color').grid(row=7, column=1,sticky="W")
+        self.delta_x_label = tk.Label(self, text='Delta X: ').grid(row=5, column=1, sticky="W")
+        self.num_step_label = tk.Label(self, text='# of Steps: ').grid(row=6, column=1, sticky="W")
+        self.color_label = tk.Label(self, text='Color').grid(row=7, column=1, sticky="W")
         """
         Section 2 Entry Objects
         """
-        self.delta_x_entry = tk.Entry(self, textvariable=self.del_x).grid(row=5, column=1,sticky='E')
-        self.num_step_entry = tk.Entry(self, textvariable=self.num_step).grid(row=6, column=1,sticky='E')
-        self.color_entry = tk.Entry(self, textvariable=self.color).grid(row=7, column=1,sticky='E')
+        self.delta_x_entry = tk.Entry(self, textvariable=self.del_x).grid(row=5, column=1, sticky='E')
+        self.num_step_entry = tk.Entry(self, textvariable=self.num_step).grid(row=6, column=1, sticky='E')
+        self.color_entry = tk.Entry(self, textvariable=self.color).grid(row=7, column=1, sticky='E')
         """
         Section 2 Misc
         """
@@ -70,7 +71,8 @@ class Application(tk.Frame):
         """
         Section 3 Labeling
         """
-        self.diffeq_label = tk.Label(self, text='Differential Equations').grid(row=8, column=1,columnspan=2,sticky='NSEW')
+        self.diffeq_label = tk.Label(self, text='Differential Equations').grid(row=8, column=1, columnspan=2,
+                                                                               sticky='NSEW')
         """
         Section 4 Treeview
         """
@@ -85,10 +87,63 @@ class Application(tk.Frame):
         """
         Final Gridding
         """
-        self.equ_tracker_tree.grid(row=9, column=1,sticky='NSEW',columnspan=2)
-        self.ini_conds.grid(row=5, column=2,rowspan=3,sticky='NSEW')
-app = Application()
-app.mainloop()
+        self.equ_tracker_tree.grid(row=9, column=1, sticky='NSEW', columnspan=2)
+        self.ini_conds.grid(row=5, column=2, rowspan=3, sticky='NSEW')
+        """
+        Menu Bar
+        """
+        self.gui_menu = tk.Menu(self.master)  # Creates the overarching gui menu
+        self.master.config(menu=self.gui_menu)
+        # Creating the submenus
+        self.filemenu = tk.Menu(self.gui_menu)
+        self.editmenu = tk.Menu(self.gui_menu)
+        self.helpmenu = tk.Menu(self.gui_menu)
+        self.settingsmenu = tk.Menu(self.gui_menu)
+        # creating the cascades
+        self.gui_menu.add_cascade(label='File', menu=self.filemenu)
+        self.gui_menu.add_cascade(label='Edit', menu=self.editmenu)
+        self.gui_menu.add_cascade(label='Help', menu=self.helpmenu)
+        self.gui_menu.add_cascade(label='Settings', menu=self.settingsmenu)
+        """
+        Creating the Filemenu
+        """
+        self.filemenu.add_command(label='Open', command=self.client_open)
+        self.filemenu.add_command(label='Save As', command=self.client_save)
+        self.filemenu.add_command(label='Import Data', command=self.client_import)
+        self.filemenu.add_command(label='Export Data', command=self.client_export)
+        self.filemenu.add_command(label='Print Graphs', command=self.client_printgraphs)
+        self.filemenu.add_command(label='Exit', command=self.client_exit)
+        """
+        Creating the Editmenu
+        """
+        """
+        Creating the Help Menu
+        """
+        """
+        Creating the Settings Menu
+        """
+        self.filemenu.add_command(label='Change Settings', command=self.settings_frame)
+
+    def settings_frame(self):
+        return False
+
+    def client_save(self):
+        return False
+
+    def client_printgraphs(self):
+        return False
+
+    def client_export(self):
+        return False
+
+    def client_import(self):
+        return False
+
+    def client_open(self):
+        return False
+
+    def client_exit(self):
+        exit()
 
 
 def define_symbols(n, name_scheme=('x', 'numbers')):
@@ -112,5 +167,8 @@ def define_symbols(n, name_scheme=('x', 'numbers')):
         return True
     else:
         raise ValueError(
-                "Dmath Library Error 01101: Function define_symbols failed because n was not int, or because name_scheme was invalid.")
+            "Dmath Library Error 01101: Function define_symbols failed because n was not int, or because name_scheme was invalid.")
 
+
+app = Application()
+app.mainloop()
