@@ -28,7 +28,6 @@ class Application(tk.Frame):
         self.create_init_widgets()
         self.init_plots()
 
-
     def create_init_widgets(self):
         """
         Creates the Application wigets
@@ -58,9 +57,9 @@ class Application(tk.Frame):
         self.deg_entry = tk.Entry(self, textvariable=self.degree_entry).grid(row=1, column=1)
         self.exp_label = tk.Label(self, text='Expression: ').grid(row=1, column=2, sticky='W')
         self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2)
-        self.add_function_button = tk.Button(self, text='Add Equation', command=self.expre_button_func).grid(row=2,
-                                                                                                             column=1,
-                                                                                                             columnspan=2)
+        self.add_function_button = tk.Button(self, text='Add Equation', command=self.update_graphs).grid(row=2,
+                                                                                                         column=1,
+                                                                                                         columnspan=2)
         self.option_label = tk.Label(self, text='Options').grid(row=3, column=1, columnspan=2, sticky="NSWE")
         """
         Section 2
@@ -150,6 +149,54 @@ class Application(tk.Frame):
         self.graph_canvas.show()
         self.graph_canvas.get_tk_widget().grid(row=1, column=3, rowspan=9, sticky='NSEW')
 
+    def update_graphs(self):
+        """
+        Updates the GUI graphs and inputs newly entered data
+        :return: True if passed
+        """
+        # Add current data
+        self.differentials.append(self.create_expression(self.equation_entry.get(), int(self.degree_entry.get())))
+        # Generate Settings
+        self.settings.append(([float(i) for i in self.initial_conditions_var.get().split(',')],
+                              float(self.del_x.get()),
+                              int(self.num_step.get()),
+                              self.color.get(),
+                              self.selected_estimation_type.get()))
+        # Clear the graphs that already exist. They are defined in self.ax1 in init_plots()
+        self.ax1.cla()
+        for expression in range(len(self.differentials)):
+            # Looping through each of the expressions in the current list of expressions. Each type is type Diff
+            exp_data = self.differentials[expression].Euler(self.settings[expression][0],
+                                                            self.settings[expression][1],
+                                                            self.settings[expression][
+                                                                2])  # Must be in form [inits],float(dx),int(steps)
+            self.ax1.plot(exp_data[0], exp_data[1])
+        self.graph_canvas.show()
+
+    def create_expression(self, exp, degree):
+        """
+        Creates an expression of type __main__.class.Diff()
+        :param exp: expression of type <str>
+        :param degree: degree of the expression as an int
+        :return: Return expression of type __main.class.Diff()
+        """
+        # Checking if expression args are correct types
+        if type(exp) != str:
+            raise TypeError("Differentia Error 1501: Type of arg_name: exp must be str, not %s" % (str(type(exp))))
+        elif type(degree) != int:
+            raise TypeError(
+                "Differentia Error 1502: Type of arg_name: degree must be int, not %s" % (str(type(degree))))
+        else:
+            pass
+        try:
+            generated_expression = prs.parse_expr(exp)  # This is the working expression of the function
+            generated_degree = int(degree)
+            # Creating the correct variables
+            generated_vars = define_symbols(degree)
+            return Diff(generated_expression, generated_degree, generated_vars)
+        except SyntaxError:
+            raise SyntaxError("Differentia Error 1503: Syntax of user entry (%s) could not be parsed." % (str(exp)))
+
     def settings_frame(self):
         return False
 
@@ -171,98 +218,24 @@ class Application(tk.Frame):
     def client_exit(self):
         exit()
 
-    def add_function(self):
-        """
-        Adds the function to the function list
-        :return:
-        """
-        # Checking the var length
-        self.var_exp = prs.parse_expr(self.equation_entry.get())
-        self.expression = parse_function(self.equation_entry.get())
-        if len(self.initial_conditions_var.get().split(',')) != int(self.degree_entry.get()) + 1:
-            raise IndexError()
-        else:
-            pass
-        # Addings the settings to the set
-        self.settings.append(([float(i) for i in self.initial_conditions_var.get().split(',')],
-                              self.selected_estimation_type.get(),
-                              float(self.del_x.get()),
-                              int(self.num_step.get()),
-                              self.color.get()))
-        self.differentials.append(Diff(self.expression, int(self.degree_entry.get()), list(self.var_exp.free_symbols)))
 
-    def update_graph(self):
-        """
-        Adds the graph data to the graphs
-        :return:
-        """
-        self.ax1.cla()
-        for expression_id in range(len(self.differentials)):
-            # Looping through each of the data
-            print self.settings
-            data = self.differentials[expression_id].Euler(self.settings[expression_id][0],
-                                                           self.settings[expression_id][2],
-                                                           self.settings[expression_id][3])
-            self.ax1.plot(data[0], data[-1])
-        self.graph_canvas.show()
-
-    def expre_button_func(self):
-        self.add_function()
-        self.update_graph()
-
-
-
-
-def parse_function(expr):
+def define_symbols(degree):
     """
-    Parses through a (str) type object to form a functional lambda expression
-    :param expr: The expression to be parsed <str>
-    :return: Returns the lambda type function
+    Defines the symbols needed for sympy
+    :param degree: degree of symbols needed
+    :return: tuple of these global variables
     """
-    """
-    Start by checking the variable forms of the equation. Should have x followed by y1,y2,y3, etc.
-    y1 = dy/dx, y2 = d2y/dx2, etc...
-    """
-    ex = prs.parse_expr(expr)
-    syms_in_exp = [str(i) for i in list(prs.parse_expr(expr).free_symbols)]
-    print syms_in_exp, type(syms_in_exp)
-    # Checking the name of the various symbols
-    if False in [('y' in i or i == 'x') for i in syms_in_exp]:
-        " One of the variables is not correct"
-        raise ValueError("Differentia Error 0101: Symbol of input must be 'x' or 'yn', not %s" % str(
-            syms_in_exp[[('y' in i or i == 'x') for i in syms_in_exp].index(False)]))
+
+    if int(degree) > 0:
+        globals()['x'] = s.Symbol('x')
+        for j in range(degree):
+            globals()['y%s' % (str(j + 1))] = s.Symbol('y%s' % (str(j+1)))
     else:
-        # Cleared the name check, now trying to lambdify
-        try:
-            # Must create a symbol for each of the symbols in the expression, as such,
-            define_symbols(1, ('x', 'numbers'))
-            define_symbols(len(syms_in_exp) - 1, ('y', 'numbers'))
-            return prs.parse_expr(expr)
-        except SyntaxError:
-            raise ValueError("Differentia Error 0102: Syntax of the expression was wrong.")
+        raise ValueError("Differentia Error 0101: Arg: degree entry failed, %s !> 0" % (str(degree)))
+    return tuple([globals()['x']] + [globals()['y%s' % (i)] for i in range(1, degree+1)])
 
-def define_symbols(n, name_scheme=('x', 'numbers')):
-    """
-    Returns globally defined symbols from sympy with these associated name.
-    :param n: Number of variables to define with the method
-    :param name_scheme: Way to name the symbols (starting letter, enumerated string type) (str,str)
-    :return: True of finished, raises error if failure
-    """
-    alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-                'v', 'w', 'x', 'y', 'z']
-    if n == 1:
-        globals()['%s' % name_scheme[0]] = s.Symbol(name_scheme[0])
-    elif type(n) == int and name_scheme[1] == 'numbers':
-        for j in range(n):
-            globals()['%s%s' % (name_scheme[0], str(j + 1))] = s.Symbol(name_scheme[0] + str(j + 1))
-        return True
-    elif type(n) == int and name_scheme[1] == 'letters':
-        for j in range(n):
-            globals()['%s%s' % (name_scheme[0], alphabet[j])] = s.Symbol(name_scheme[0] + alphabet[j])
-        return True
-    else:
-        raise ValueError(
-            "Dmath Library Error 01101: Function define_symbols failed because n was not int, or because name_scheme was invalid.")
+
+
 
 
 app = Application()
