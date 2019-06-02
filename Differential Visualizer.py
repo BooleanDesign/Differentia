@@ -22,10 +22,12 @@ Error Guide:
 class Application(tk.Frame):
     def __init__(self):
         tk.Frame.__init__(self)
+        self.differentials = []
+        self.settings = []
         self.pack()
         self.create_init_widgets()
         self.init_plots()
-        self.differentials = []
+
 
     def create_init_widgets(self):
         """
@@ -41,50 +43,47 @@ class Application(tk.Frame):
         self.num_step = tk.StringVar()
         self.color = tk.StringVar()
         self.degree_entry = tk.StringVar()
+        self.initial_conditions_var = tk.StringVar()
         self.color.set("FFFFFF")
         self.num_step.set("1000")
         self.del_x.set("0.01")
         self.equation_entry.set("Differential Equation")
         self.selected_estimation_type.set("None")
+        self.initial_conditions_var.set("")
+        self.degree_entry.set('1')
         """
         Section 1
         """
         self.deg_label = tk.Label(self, text='Degree: ').grid(row=1, column=1, sticky='W')
-        self.deg_entry = tk.Entry(self, textvariable=self.degree_entry).grid(row=1, column=1, sticky='E')
+        self.deg_entry = tk.Entry(self, textvariable=self.degree_entry).grid(row=1, column=1)
         self.exp_label = tk.Label(self, text='Expression: ').grid(row=1, column=2, sticky='W')
         self.diff_entry = tk.Entry(self, textvariable=self.equation_entry).grid(row=1, column=2)
-        self.add_function_button = tk.Button(self, text='Add Equation').grid(row=2, column=1, columnspan=2)
+        self.add_function_button = tk.Button(self, text='Add Equation', command=self.expre_button_func).grid(row=2,
+                                                                                                             column=1,
+                                                                                                             columnspan=2)
         self.option_label = tk.Label(self, text='Options').grid(row=3, column=1, columnspan=2, sticky="NSWE")
         """
         Section 2
         """
+        self.estimation_type_label = tk.Label(self, text='Estimation Type:').grid(row=4, column=1, sticky='W')
         self.estimation_type = ttk.Combobox(self, textvariable=self.selected_estimation_type)
         self.estimation_type['values'] = ("Euler's Method", "Heun's Method", "Runge Kutta Method")
-        self.estimation_type.grid(row=4, column=1)
+        self.estimation_type.grid(row=4, column=1, sticky='E')
         """
         Section 2 Label Objects
         """
-        self.initial_condition_label = tk.Label(self, text='Initial Conditions').grid(row=4, column=2)
+        self.initial_condition_label = tk.Label(self, text='Initial Conditions').grid(row=4, column=2, sticky='W')
         self.delta_x_label = tk.Label(self, text='Delta X: ').grid(row=5, column=1, sticky="W")
         self.num_step_label = tk.Label(self, text='# of Steps: ').grid(row=6, column=1, sticky="W")
-        self.color_label = tk.Label(self, text='Color').grid(row=7, column=1, sticky="W")
+        self.color_label = tk.Label(self, text='Color').grid(row=5, column=2, sticky="W")
         """
         Section 2 Entry Objects
         """
+        self.initial_condition_entry = tk.Entry(self, textvariable=self.initial_conditions_var).grid(row=4, column=2,
+                                                                                                     sticky='E')
         self.delta_x_entry = tk.Entry(self, textvariable=self.del_x).grid(row=5, column=1, sticky='E')
         self.num_step_entry = tk.Entry(self, textvariable=self.num_step).grid(row=6, column=1, sticky='E')
-        self.color_entry = tk.Entry(self, textvariable=self.color).grid(row=7, column=1, sticky='E')
-        """
-        Section 2 Misc
-        """
-        self.ini_conds_tree_cols = [("Var", 100), ("Value", 200)]
-        self.ini_conds = ttk.Treeview(self,
-                                      columns=[col for col, _ in self.ini_conds_tree_cols],
-                                      show='headings')
-        for col, colwidth in self.ini_conds_tree_cols:
-            self.ini_conds.heading(col, text=col.title())
-            self.ini_conds.column(col, width=colwidth)
-        self.ini_conds.insert('', 'end', text='equ')
+        self.color_entry = tk.Entry(self, textvariable=self.color).grid(row=5, column=2, sticky='E')
         """
         Section 3 Labeling
         """
@@ -105,7 +104,6 @@ class Application(tk.Frame):
         Final Gridding
         """
         self.equ_tracker_tree.grid(row=9, column=1, sticky='NSEW', columnspan=2)
-        self.ini_conds.grid(row=5, column=2, rowspan=3, sticky='NSEW')
         """
         Menu Bar
         """
@@ -139,7 +137,7 @@ class Application(tk.Frame):
         """
         Creating the Settings Menu
         """
-        self.filemenu.add_command(label='Change Settings', command=self.settings_frame)
+        self.settingsmenu.add_command(label='Change Settings', command=self.settings_frame)
 
     def init_plots(self):
         """
@@ -147,9 +145,7 @@ class Application(tk.Frame):
         :return:
         """
         self.figure = Figure(figsize=(5, 5), dpi=100)
-        self.ax2 = self.figure.add_subplot(111)
         self.ax1 = self.figure.add_subplot(111)
-        self.ax1.plot([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100])
         self.graph_canvas = (FigureCanvasTkAgg(self.figure, self))
         self.graph_canvas.show()
         self.graph_canvas.get_tk_widget().grid(row=1, column=3, rowspan=9, sticky='NSEW')
@@ -175,9 +171,46 @@ class Application(tk.Frame):
     def client_exit(self):
         exit()
 
-    # def add_function(self):
-    #   try:
-    #      self.differentials.append(Diff(self.equation_entry.get(),))
+    def add_function(self):
+        """
+        Adds the function to the function list
+        :return:
+        """
+        # Checking the var length
+        self.var_exp = prs.parse_expr(self.equation_entry.get())
+        self.expression = parse_function(self.equation_entry.get())
+        if len(self.initial_conditions_var.get().split(',')) != int(self.degree_entry.get()) + 1:
+            raise IndexError()
+        else:
+            pass
+        # Addings the settings to the set
+        self.settings.append(([float(i) for i in self.initial_conditions_var.get().split(',')],
+                              self.selected_estimation_type.get(),
+                              float(self.del_x.get()),
+                              int(self.num_step.get()),
+                              self.color.get()))
+        self.differentials.append(Diff(self.expression, int(self.degree_entry.get()), list(self.var_exp.free_symbols)))
+
+    def update_graph(self):
+        """
+        Adds the graph data to the graphs
+        :return:
+        """
+        self.ax1.cla()
+        for expression_id in range(len(self.differentials)):
+            # Looping through each of the data
+            print self.settings
+            data = self.differentials[expression_id].Euler(self.settings[expression_id][0],
+                                                           self.settings[expression_id][2],
+                                                           self.settings[expression_id][3])
+            self.ax1.plot(data[0], data[-1])
+        self.graph_canvas.show()
+
+    def expre_button_func(self):
+        self.add_function()
+        self.update_graph()
+
+
 
 
 def parse_function(expr):
@@ -191,7 +224,8 @@ def parse_function(expr):
     y1 = dy/dx, y2 = d2y/dx2, etc...
     """
     ex = prs.parse_expr(expr)
-    syms_in_exp = str(list(prs.parse_expr(expr).free_symbols))
+    syms_in_exp = [str(i) for i in list(prs.parse_expr(expr).free_symbols)]
+    print syms_in_exp, type(syms_in_exp)
     # Checking the name of the various symbols
     if False in [('y' in i or i == 'x') for i in syms_in_exp]:
         " One of the variables is not correct"
@@ -203,10 +237,9 @@ def parse_function(expr):
             # Must create a symbol for each of the symbols in the expression, as such,
             define_symbols(1, ('x', 'numbers'))
             define_symbols(len(syms_in_exp) - 1, ('y', 'numbers'))
-            return s.lambdify(prs.parse_expr(expr).free_symbols, expr)
+            return prs.parse_expr(expr)
         except SyntaxError:
             raise ValueError("Differentia Error 0102: Syntax of the expression was wrong.")
-
 
 def define_symbols(n, name_scheme=('x', 'numbers')):
     """

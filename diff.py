@@ -1,5 +1,5 @@
-import sympy as s
 import numpy as np
+import sympy as s
 
 """
 
@@ -42,6 +42,7 @@ class Diff:
         try:
             dxf = float(dx)  # convert dx to float so that there is no rounding error
             data = [[float(p)] for p in init]
+            print init
             data.append([self.l(
                     *init)])  # Creates data list of the form [x0],[y0],etc...] #Appends all of the x values to the data
             """
@@ -61,8 +62,8 @@ class Diff:
                 data[-1].append(1000.0)
         except ValueError:
             raise TypeError("Dmath Error 10111: Variable in Diff.Euler was not type int or float.")
-        except TypeError:
-            raise TypeError("Dmath Error 10112: Variable in Diff.Euler was not able to convert to float.")
+        # except TypeError:
+        # raise TypeError("Dmath Error 10112: Variable in Diff.Euler was not able to convert to float.")
 
     def Runge_Kutta(self, initial_conditions, dx, steps):
         """
