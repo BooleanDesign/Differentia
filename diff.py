@@ -30,6 +30,8 @@ class Diff:
                             'numpy')  # Creates a lambda function with inputs (vars) and function (input)
         self.degree = degree
         self.vars = variables
+        self.est_dict = {"Euler's Method": self.Euler, "Heun's Method": self.Heun,
+                         "Runge Kutta Method": self.Runge_Kutta}
 
     def Euler(self, init, dx, steps):
         """
@@ -73,7 +75,13 @@ class Diff:
         :param steps: number of steps (int)
         :return: Data
         """
-        init = [initial_conditions[i] for i in range(len(initial_conditions))]  # Converts data format for compatibility
+        init = initial_conditions  # Converts data format for compatibility
+        if type(init) != list:
+            raise TypeError("Dmath Error 10401: Initial condition type must be type list, not %s" % (str(type(init))))
+        elif (False in [type(i) is list for i in init]):
+            init = [[i] for i in init]
+        else:
+            pass
         point_data = init
         if self.degree != 1:
             raise TypeError("Dmath Error 10401: Runge Kutta implementation is limited to first degree ODE.")
@@ -95,16 +103,22 @@ class Diff:
     def Heun(self, init, dx, steps):
         """
                 Defines the Heun estimation of the equation
-                :param init: Initial points as a nested list [[x],[y]]
+                :param init: Initial points as a nested list [[x],[y]], or as a normal list, will rectify
                 :param dx: step distance (float)
                 :param steps: number of steps (int)
                 :return: Data
                 """
-        point_data = init
+        if type(init) != list:
+            raise TypeError("Dmath Error 10401: Initial condition type must be type list, not %s" % (str(type(init))))
+        elif (False in [type(i) is list for i in init]):
+            point_data = [[i] for i in init]
+        else:
+            point_data = init
+        print point_data
         if self.degree != 1:
-            raise TypeError("Dmath Error 10401: Runge Kutta implementation is limited to first degree ODE.")
+            raise TypeError("Dmath Error 10402: Heun Method implementation is limited to first degree ODE.")
         elif (type(dx) != int and type(dx) != float) or type(steps) != int:
-            raise TypeError("Dmath Error 10402: Mistyped values: dx must be a float or int, steps must be int.")
+            raise TypeError("Dmath Error 10403: Mistyped values: dx must be a float or int, steps must be int.")
         else:
             pass
         for step in range(steps):

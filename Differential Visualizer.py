@@ -162,16 +162,26 @@ class Application(tk.Frame):
                               int(self.num_step.get()),
                               self.color.get(),
                               self.selected_estimation_type.get()))
+        # Populating the Treeview
+        self.equ_tracker_tree.insert("", "end", "",
+                                     values=(str(len(self.differentials)),
+                                             str(self.differentials[-1].degree),
+                                             str(self.equation_entry.get()),
+                                             str(self.selected_estimation_type.get()),
+                                             str(self.settings[-1][0][1:-1])))
         # Clear the graphs that already exist. They are defined in self.ax1 in init_plots()
         self.ax1.cla()
         for expression in range(len(self.differentials)):
             # Looping through each of the expressions in the current list of expressions. Each type is type Diff
-            exp_data = self.differentials[expression].Euler(self.settings[expression][0],
+            exp_data = self.differentials[expression].est_dict[self.selected_estimation_type.get()](
+                self.settings[expression][0],
                                                             self.settings[expression][1],
-                                                            self.settings[expression][
-                                                                2])  # Must be in form [inits],float(dx),int(steps)
-            self.ax1.plot(exp_data[0], exp_data[1])
+                self.settings[expression][2])  # Must be in form [inits],float(dx),int(steps)
+            self.ax1.plot(exp_data[0], exp_data[1], color='#' + self.color.get())
         self.graph_canvas.show()
+        # Resetting all of the variables
+        self.equation_entry.set("")
+        self.initial_conditions_var.set("")
 
     def create_expression(self, exp, degree):
         """
