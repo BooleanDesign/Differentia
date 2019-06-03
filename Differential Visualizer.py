@@ -9,6 +9,7 @@ from matplotlib.figure import Figure
 from diff import *
 
 matplotlib.use("TkAgg")
+default_config_path = 'CONFIG.config'
 
 """
 Error Guide:
@@ -24,6 +25,7 @@ class Application(tk.Frame):
         tk.Frame.__init__(self)
         self.differentials = []
         self.settings = []
+        self.configs = get_config(default_config_path)
         self.pack()
         self.create_init_widgets()
         self.init_plots()
@@ -43,13 +45,13 @@ class Application(tk.Frame):
         self.color = tk.StringVar()
         self.degree_entry = tk.StringVar()
         self.initial_conditions_var = tk.StringVar()
-        self.color.set("FFFFFF")
-        self.num_step.set("1000")
-        self.del_x.set("0.01")
+        self.color.set(self.configs["default_color"])
+        self.num_step.set(self.configs["default_step_count"])
+        self.del_x.set(self.configs["default_dx"])
         self.equation_entry.set("Differential Equation")
-        self.selected_estimation_type.set("None")
+        self.selected_estimation_type.set(self.configs["default_method"])
         self.initial_conditions_var.set("")
-        self.degree_entry.set('1')
+        self.degree_entry.set(self.configs["default_degree"])
         """
         Section 1
         """
@@ -149,10 +151,10 @@ class Application(tk.Frame):
         self.graph_canvas.show()
         self.graph_canvas.get_tk_widget().grid(row=1, column=3, rowspan=9, sticky='NSEW')
 
-    def update_graphs(self):
+    def update_data(self):
         """
-        Updates the GUI graphs and inputs newly entered data
-        :return: True if passed
+        Basic update of differentials and settigns
+        :return:
         """
         # Add current data
         self.differentials.append(self.create_expression(self.equation_entry.get(), int(self.degree_entry.get())))
@@ -169,15 +171,30 @@ class Application(tk.Frame):
                                              str(self.equation_entry.get()),
                                              str(self.selected_estimation_type.get()),
                                              str(self.settings[-1][0][1:-1])))
+
+    def update_graphs(self):
+        """
+        Updates the GUI graphs and inputs newly entered data
+        :return: True if passed
+        """
+        self.update_data()
         # Clear the graphs that already exist. They are defined in self.ax1 in init_plots()
         self.ax1.cla()
         for expression in range(len(self.differentials)):
             # Looping through each of the expressions in the current list of expressions. Each type is type Diff
             exp_data = self.differentials[expression].est_dict[self.selected_estimation_type.get()](
                 self.settings[expression][0],
-                                                            self.settings[expression][1],
+                self.settings[expression][1],
                 self.settings[expression][2])  # Must be in form [inits],float(dx),int(steps)
-            self.ax1.plot(exp_data[0], exp_data[1], color='#' + self.color.get())
+            self.ax1.plot(exp_data[0], exp_data[1], color='#' + self.settings[expression][3])
+        """
+        Addings graph settings to the graph
+        """
+        self.ax1.set_title(r"$" + self.configs["default_title_label"] + "$")
+        self.ax1.set_xlabel(r"$" + self.configs["default_x_label"] + "$")
+        self.ax1.set_ylabel(r"$" + self.configs["default_y_label"] + "$")
+        if self.configs['default_grid_status'] == 'True':
+            self.ax1.grid()
         self.graph_canvas.show()
         # Resetting all of the variables
         self.equation_entry.set("")
@@ -243,6 +260,24 @@ def define_symbols(degree):
     else:
         raise ValueError("Differentia Error 0101: Arg: degree entry failed, %s !> 0" % (str(degree)))
     return tuple([globals()['x']] + [globals()['y%s' % (i)] for i in range(1, degree+1)])
+
+
+def get_config(config_file):
+    """
+    Gets the config settings from the input config file
+    :param config_file: <type str> should be valid path to the config_file.
+    :return: config settings <type dict>
+    """
+    try:
+        config = open(config_file, 'r+')
+        config_data = {}
+        for i in config.read().split('\n'):
+            if i[0] != '#':
+                config_data[i.split('=')[0]] = i.split('=')[1]
+        return config_data
+    except IOError:
+        raise SystemError("Differentia Error 0201: FATAL, configuration file not found at path %s" % (config_file))
+
 
 
 
